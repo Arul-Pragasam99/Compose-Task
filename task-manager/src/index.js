@@ -24,30 +24,76 @@ app.get("/", (req, res) => {
   <title>Task Manager</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
+      --bg: #f5f5f5;
+      --card: #ffffff;
+      --text: #111111;
+      --text-muted: #888888;
+      --border: #e5e5e5;
+      --border-hover: #bbbbbb;
+      --input-bg: #ffffff;
+      --input-border: #dddddd;
+      --btn-bg: #111111;
+      --btn-hover: #333333;
+      --delete-color: #bbbbbb;
+
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f5f5f5;
-      color: #111;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       padding: 2rem 1rem;
+      transition: background 0.2s, color 0.2s;
     }
+
+    body.dark {
+      --bg: #0f0f0f;
+      --card: #1a1a1a;
+      --text: #f1f1f1;
+      --text-muted: #aaaaaa;
+      --border: #2a2a2a;
+      --border-hover: #444444;
+      --input-bg: #222222;
+      --input-border: #333333;
+      --btn-bg: #f1f1f1;
+      --btn-hover: #cccccc;
+      --delete-color: #555555;
+    }
+
     .container { max-width: 700px; margin: 0 auto; }
+
     header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 1.5rem;
     }
-    header h1 { font-size: 22px; font-weight: 600; }
-    header p { font-size: 13px; color: #888; margin-top: 2px; }
+    header h1 { font-size: 22px; font-weight: 600; color: var(--text); }
+    header p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    .header-right { display: flex; align-items: center; gap: 12px; }
+
     #conn-dot {
       width: 8px; height: 8px; border-radius: 50%;
       background: #639922; display: inline-block; margin-right: 6px;
     }
-    #conn-label { font-size: 12px; color: #666; }
+    #conn-label { font-size: 12px; color: var(--text-muted); }
+
+    .theme-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .theme-btn:hover { border-color: var(--border-hover); background: var(--bg); }
+
     .card {
-      background: #fff;
-      border: 1px solid #e5e5e5;
+      background: var(--card);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 1.25rem;
       margin-bottom: 1.25rem;
@@ -57,38 +103,39 @@ app.get("/", (req, res) => {
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #888;
+      color: var(--text-muted);
       margin-bottom: 1rem;
     }
+
     .form-grid { display: flex; flex-direction: column; gap: 12px; }
+
     input[type="text"], input[type="date"], select, textarea {
       width: 100%;
       padding: 9px 12px;
-      border: 1px solid #ddd;
+      border: 1px solid var(--input-border);
       border-radius: 8px;
       font-size: 14px;
       font-family: inherit;
-      background: #fff;
-      color: #111;
+      background: var(--input-bg);
+      color: var(--text);
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, background 0.2s;
     }
     input:focus, select:focus, textarea:focus { border-color: #888; }
     textarea { resize: vertical; }
-    .three-col {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
-    }
+
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
     label.field-label {
       display: block;
       font-size: 12px;
-      color: #888;
+      color: var(--text-muted);
       margin-bottom: 4px;
     }
+
     button.primary {
-      background: #111;
-      color: #fff;
+      background: var(--btn-bg);
+      color: var(--card);
       border: none;
       padding: 9px 20px;
       border-radius: 8px;
@@ -98,8 +145,10 @@ app.get("/", (req, res) => {
       align-self: flex-end;
       transition: background 0.2s;
     }
-    button.primary:hover { background: #333; }
+    body.dark button.primary { color: #111; }
+    button.primary:hover { background: var(--btn-hover); }
     button.primary:active { transform: scale(0.98); }
+
     .filters {
       display: flex;
       align-items: center;
@@ -111,18 +160,16 @@ app.get("/", (req, res) => {
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #888;
+      color: var(--text-muted);
     }
     .filter-selects { display: flex; gap: 8px; }
-    .filter-selects select {
-      font-size: 12px;
-      padding: 5px 8px;
-      width: auto;
-    }
+    .filter-selects select { font-size: 12px; padding: 5px 8px; width: auto; }
+
     .task-list { display: flex; flex-direction: column; gap: 8px; }
+
     .task-item {
-      background: #fff;
-      border: 1px solid #e5e5e5;
+      background: var(--card);
+      border: 1px solid var(--border);
       border-radius: 10px;
       padding: 12px 16px;
       display: flex;
@@ -130,38 +177,38 @@ app.get("/", (req, res) => {
       gap: 12px;
       transition: border-color 0.2s;
     }
-    .task-item:hover { border-color: #bbb; }
+    .task-item:hover { border-color: var(--border-hover); }
     .task-body { flex: 1; }
-    .task-title { font-size: 14px; font-weight: 500; color: #111; margin-bottom: 4px; }
-    .task-desc { font-size: 13px; color: #666; margin-bottom: 4px; }
-    .task-due { font-size: 12px; color: #aaa; }
+    .task-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+    .task-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+    .task-due { font-size: 12px; color: var(--text-muted); }
+
     .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
-    .badge {
-      font-size: 11px;
-      font-weight: 500;
-      padding: 2px 8px;
-      border-radius: 999px;
-    }
-    .badge-pending    { background: #FAEEDA; color: #854F0B; }
+    .badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 999px; }
+    .badge-pending     { background: #FAEEDA; color: #854F0B; }
     .badge-in-progress { background: #E6F1FB; color: #185FA5; }
-    .badge-done       { background: #EAF3DE; color: #3B6D11; }
-    .badge-low        { background: #f1f0ec; color: #5F5E5A; }
-    .badge-medium     { background: #FAEEDA; color: #854F0B; }
-    .badge-high       { background: #FCEBEB; color: #A32D2D; }
+    .badge-done        { background: #EAF3DE; color: #3B6D11; }
+    .badge-low         { background: #f1f0ec; color: #5F5E5A; }
+    .badge-medium      { background: #FAEEDA; color: #854F0B; }
+    .badge-high        { background: #FCEBEB; color: #A32D2D; }
+
     .task-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .task-actions select { font-size: 12px; padding: 4px 8px; width: auto; }
+
     .delete-btn {
       background: none;
       border: none;
       cursor: pointer;
-      color: #bbb;
+      color: var(--delete-color);
       font-size: 16px;
       line-height: 1;
       padding: 0;
       transition: color 0.2s;
     }
     .delete-btn:hover { color: #A32D2D; }
-    .empty { text-align: center; font-size: 13px; color: #aaa; padding: 2.5rem 0; }
+
+    .empty { text-align: center; font-size: 13px; color: var(--text-muted); padding: 2.5rem 0; }
+
     .toast {
       position: fixed;
       bottom: 24px;
@@ -177,6 +224,7 @@ app.get("/", (req, res) => {
     }
     .toast.success { background: #EAF3DE; color: #3B6D11; border: 1px solid #97C459; }
     .toast.error   { background: #FCEBEB; color: #A32D2D; border: 1px solid #F09595; }
+
     @media (max-width: 500px) {
       .three-col { grid-template-columns: 1fr 1fr; }
     }
@@ -189,9 +237,12 @@ app.get("/", (req, res) => {
         <h1>Task Manager</h1>
         <p>localhost:${PORT}</p>
       </div>
-      <div>
-        <span id="conn-dot"></span>
-        <span id="conn-label">Checking...</span>
+      <div class="header-right">
+        <div>
+          <span id="conn-dot"></span>
+          <span id="conn-label">Checking...</span>
+        </div>
+        <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
       </div>
     </header>
 
@@ -227,7 +278,7 @@ app.get("/", (req, res) => {
     </div>
 
     <div class="filters">
-      <h2>Tasks <span id="task-count" style="font-weight:400;color:#aaa;">(0)</span></h2>
+      <h2>Tasks <span id="task-count" style="font-weight:400;">(0)</span></h2>
       <div class="filter-selects">
         <select id="filter-status" onchange="loadTasks()">
           <option value="">All statuses</option>
@@ -253,6 +304,17 @@ app.get("/", (req, res) => {
 
   <script>
     const BASE = '';
+
+    function toggleTheme() {
+      const isDark = document.body.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      document.getElementById('theme-btn').textContent = isDark ? '☀️ Light' : '🌙 Dark';
+    }
+
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+      document.getElementById('theme-btn').textContent = '☀️ Light';
+    }
 
     async function checkHealth() {
       try {
